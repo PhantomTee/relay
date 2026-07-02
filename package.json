@@ -1,19 +1,21 @@
 {
-  "name": "relay",
-  "version": "1.0.0",
-  "description": "Real-time Expert Linking and AccountabilitY - Slack Agent",
-  "type": "module",
-  "scripts": {
-    "start": "node src/app.js",
-    "dev": "node --watch src/app.js"
-  },
-  "dependencies": {
-    "@modelcontextprotocol/sdk": "^1.12.1",
-    "@slack/bolt": "^4.4.1",
-    "@supabase/supabase-js": "^2.50.0",
-    "dotenv": "^16.5.0",
-    "groq-sdk": "^0.13.0",
-    "node-cron": "^3.0.3",
-    "zod": "^3.25.51"
-  }
+    "name":  "relay",
+    "version":  "1.0.0",
+    "description":  "Real-time Expert Linking and AccountabilitY - Slack Agent",
+    "type":  "module",
+    "scripts":  {
+                    "start":  "node src/app.js",
+                    "dev":  "node --watch src/app.js",
+                    "check":  "node --check src/app.js \u0026\u0026 node --check src/classifier.js \u0026\u0026 node --check src/db.js \u0026\u0026 node --check src/reminders.js \u0026\u0026 node --check src/mcp/server.js \u0026\u0026 node --check src/mcp/client.js \u0026\u0026 node --check src/privacy.js \u0026\u0026 node --check src/text.js \u0026\u0026 node --check src/embeddings.js \u0026\u0026 node --check src/expertFinder.js",
+                    "test":  "node test/run-tests.js"
+                },
+    "dependencies":  {
+                         "@modelcontextprotocol/sdk":  "^1.12.1",
+                         "@slack/bolt":  "^4.4.1",
+                         "@supabase/supabase-js":  "^2.50.0",
+                         "dotenv":  "^16.5.0",
+                         "groq-sdk":  "^0.13.0",
+                         "node-cron":  "^3.0.3",
+                         "zod":  "^3.25.51"
+                     }
 }
