@@ -1,11 +1,18 @@
+import { getExpertScoresForKeywords } from './db.js'
+
 const SEARCH_LOOKBACK_DAYS = 90
 
 export async function findExpert(client, keywords, channelId, askerId) {
-  const query = keywords.join(' ')
+  const normalized = [...new Set((Array.isArray(keywords) ? keywords : []).map(k => String(k).toLowerCase()).filter(Boolean))].slice(0, 8)
+  const query = normalized.join(' ')
   const scores = {}
 
+  for (const row of await getExpertScoresForKeywords(normalized)) {
+    if (!row.user_id || row.user_id === askerId) continue
+    scores[row.user_id] = (scores[row.user_id] ?? 0) + Number(row.score ?? 0) * 2
+  }
+
   try {
-    // Use Slack's search.messages (Real-Time Search API) to find who has discussed this topic
     const result = await client.search.messages({
       query,
       count: 50,
@@ -19,7 +26,6 @@ export async function findExpert(client, keywords, channelId, askerId) {
       const userId = msg.user
       if (!userId || userId === askerId) continue
 
-      // Weight recent messages higher
       const ageDays = (Date.now() / 1000 - parseFloat(msg.ts)) / 86400
       if (ageDays > SEARCH_LOOKBACK_DAYS) continue
 
@@ -27,13 +33,14 @@ export async function findExpert(client, keywords, channelId, askerId) {
       scores[userId] = (scores[userId] ?? 0) + weight
     }
   } catch {
-    // Fallback: scan channel history if search.messages needs a user token
-    await scanChannelHistory(client, channelId, keywords, askerId, scores)
+    await scanChannelHistory(client, channelId, normalized, askerId, scores)
   }
 
-  if (Object.keys(scores).length === 0) return null
+  const ranked = Object.entries(scores)
+    .filter(([, score]) => score > 0)
+    .sort((a, b) => b[1] - a[1])
 
-  return Object.entries(scores).sort((a, b) => b[1] - a[1])[0][0]
+  return ranked[0]?.[0] ?? null
 }
 
 async function scanChannelHistory(client, channelId, keywords, askerId, scores) {
